@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Windows Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <div class="login-screen">
+    <div class="login-box">
+
+      <img src="windows-logo.png" class="win-logo" alt="Windows">
+
+      <div class="user">
+        <div class="avatar"></div>
+        <div class="username">Dr. Uday Goyal</div>
+      </div>
+
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+
+      <button type="button" onclick="checkLogin()">→</button>
+
+      <div class="hint">
+        Hint: He trusted logs more than memory.
+      </div>
+
+      <div class="error" id="error"></div>
+
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

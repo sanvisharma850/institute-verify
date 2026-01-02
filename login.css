@@ -1,0 +1,65 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: linear-gradient(#1a3d6f, #000);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.login-box {
+  text-align: center;
+}
+
+.win-logo {
+  width: 120px;
+  margin-bottom: 30px;
+}
+
+.avatar {
+  width: 90px;
+  height: 90px;
+  background: #ccc;
+  border-radius: 50%;
+  margin: auto;
+  margin-bottom: 10px;
+}
+
+.username {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 220px;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 2px;
+  border: none;
+}
+
+button {
+  width: 40px;
+  height: 34px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.hint {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 14px;
+}
+
+.error {
+  color: #ff6666;
+  font-size: 13px;
+  margin-top: 8px;
+}

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ugoyal/legacy-auth-paxos-final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="repo.css">
+</head>
+
+<body>
+
+    <header class="gh-header">
+        <div class="logo-area">
+            <svg height="32" viewBox="0 0 16 16" width="32" class="octicon">
+                <path fill-rule="evenodd"
+                    d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                </path>
+            </svg>
+            <span class="repo-breadcrumb">
+                <a href="#" class="user-link">ugoyal</a> / <strong><a href="#"
+                        class="repo-link">legacy-auth-paxos-final</a></strong>
+            </span>
+            <span class="label-private">Public Archive</span>
+        </div>
+
+        <div class="header-actions">
+            <a href="gateway.html" class="action-btn primary">
+                <span class="icon">▶</span> Run Gateway
+            </a>
+        </div>
+    </header>
+
+    <div class="repo-desc-bar">
+        <p>Redundancy checks for distributed systems. (Archived on 01/02/2026 - Emergency Push)</p>
+    </div>
+
+    <div class="container">
+
+        <div class="main-column">
+
+            <!-- File List -->
+            <div class="file-browser">
+                <div class="file-header">
+                    <div class="user-info">
+                        <div class="avatar-small"></div>
+                        <strong>ugoyal</strong>
+                        <span class="commit-msg">Emergency Push: Contingency Active</span>
+                    </div>
+                    <div class="commit-time">on Jan 2, 2026</div>
+                </div>
+
+                <div class="file-list">
+                    <div class="file-row" onclick="loadFile('readme')">
+                        <span class="icon-file">📄</span>
+                        <a href="javascript:void(0)">README.md</a>
+                        <span class="commit-desc">Update grading rubric jokes</span>
+                        <span class="time">2 hours ago</span>
+                    </div>
+                    <div class="file-row" onclick="loadFile('auth')">
+                        <span class="icon-file">📄</span>
+                        <a href="javascript:void(0)">auth_utils.py</a>
+                        <span class="commit-desc">Reflection logic implementation</span>
+                        <span class="time">2 hours ago</span>
+                    </div>
+                    <div class="file-row" onclick="loadFile('logs')">
+                        <span class="icon-file">📄</span>
+                        <a href="javascript:void(0)">network_dump.log</a>
+                        <span class="commit-desc">LOGS DO NOT DELETE</span>
+                        <span class="time">10 mins ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Viewer -->
+            <div class="file-view-container" id="file-viewer">
+
+                <!-- README.md CONTENT -->
+                <div id="content-readme" class="file-content active">
+                    <div class="file-view-header">
+                        <span class="icon-book">📖</span> README.md
+                    </div>
+                    <div class="markdown-body">
+                        <h1>Project: Paxos-Redux</h1>
+                        <p>"The students always complain about my grading rubric. They say I'm repetitive.<br>
+                            I tell them: if you don't see the pattern the first time, look four times more.<br>
+                            Zero attention to detail. That's why they fail."</p>
+
+                        <h3>Documentation Status:</h3>
+                        <ul>
+                            <li>[1] Phase One: Initial Seal</li>
+                            <li>[4] Phase Two: Face Recognition</li>
+                            <li>[0] Phase Three: Reflection Check</li>
+                            <li>[2] Phase Four: Handshake Verification</li>
+                        </ul>
+
+                        <div class="broken-image-box">
+                            <span class="broken-icon">🖼️</span>
+                            <span class="alt-text">err_ref_78.png "The mirror shows the truth."</span>
+                        </div>
+
+                        <blockquote>
+                            <p>"Mirrors are funny things. They reverse the image but not the logic."</p>
+                        </blockquote>
+                    </div>
+                </div>
+
+                <!-- auth_utils.py CONTENT -->
+                <div id="content-auth" class="file-content" style="display:none;">
+                    <div class="file-view-header">
+                        <span class="icon-code">📜</span> auth_utils.py
+                    </div>
+                    <pre
+                        class="code-view"><code><span class="kw">def</span> <span class="func">verify_integrity</span>(packet):
+    <span class="cmt"># I told the dean: 'U Goyal' doesn't back down from a security audit.</span>
+    <span class="cmt"># Note: Username is the first initial + last name (standard campus format).</span>
+    
+    <span class="cmt"># REPETITION TEST: </span>
+    <span class="cmt"># Is the packet a reflection? </span>
+    <span class="cmt"># If Source == Destination, it's a mirror. </span>
+    <span class="cmt"># If it's a mirror, someone is in the middle.</span>
+    
+    <span class="cmt"># [TODO: 1:40 AM] - My heart feels heavy. </span>
+    <span class="cmt"># Or maybe it's just the coffee. Cold, like the logs.</span>
+    
+    <span class="kw">pass</span> <span class="cmt"># Encryption is just a mask. Look at the face, check the seal.</span></code></pre>
+                </div>
+
+                <!-- network_dump.log CONTENT -->
+                <div id="content-logs" class="file-content" style="display:none;">
+                    <div class="file-view-header">
+                        <span class="icon-log">📋</span> network_dump.log
+                    </div>
+                    <pre class="log-view"><code>[01:30:11] INCOMING: TLS Handshake started.
+[01:30:12] CERT_INFO: Issuer: [REDACTED]
+[01:30:12] WARNING: Certificate "Seal" does not match CA Root.
+[01:30:13] ALERT: User 'ugoyal' logged in from internal IP.
+[01:30:15] DEBUG: Wait... I am already logged in from my office.
+[01:30:16] DEBUG: Two faces. One mirror.
+[01:30:45] CRITICAL: Packet interception detected. 
+[01:35:00] [DATA ERASED BY SYSTEM ADMIN]
+[01:39:59] PUSHING CONTINGENCY... </code></pre>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="sidebar">
+            <div class="about-section">
+                <h3>About</h3>
+                <p>Redundancy checks for distributed systems.</p>
+                <div class="tags">
+                    <span class="tag">security</span>
+                    <span class="tag">paxos</span>
+                    <span class="tag">contingency</span>
+                </div>
+            </div>
+
+            <div class="releases-section">
+                <h3>Releases</h3>
+                <div class="release-item">
+                    <span class="icon-tag">🏷️</span>
+                    <strong>v0.0.0</strong>
+                    <span class="release-date">Final</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="repo.js"></script>
+</body>
+
+</html>
