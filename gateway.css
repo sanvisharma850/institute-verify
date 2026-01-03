@@ -2,6 +2,10 @@ body {
   margin: 0;
   padding: 0;
   background-color: #0d0d0d;
+  background-image: url('bg_cyber.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #c0c0c0;
   font-family: "Courier New", Courier, monospace;
   display: flex;
