@@ -1,62 +1,261 @@
-/* Page background — Outlook / enterprise mail feel */
-body {
+* {
   margin: 0;
   padding: 0;
-  background-color: #f3f3f3; /* classic Outlook gray */
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  color: #1a1a1a;
+  box-sizing: border-box;
 }
 
-/* Email container */
-.email-container {
-  width: 520px;
-  margin: 60px auto;
+body {
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
   background-color: #ffffff;
-  border: 1px solid #d0d0d0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  color: #202124;
 }
 
-/* Header (From / Subject) */
-.email-header {
-  background-color: #f7f7f7;
-  padding: 12px 16px;
-  font-size: 13px;
-  border-bottom: 1px solid #d0d0d0;
+.gmail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f6f8fc;
+  border-bottom: 1px solid #dadce0;
 }
 
-/* Body text */
-.email-body {
-  padding: 18px 20px;
+/* Left */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-icon {
+  width: 24px;
+  height: 24px;
+  fill: #5f6368;
+  cursor: pointer;
+}
+
+.gmail-logo-img {
+  height: 30px;
+}
+
+/* Center */
+.search-bar {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 32px;
+  display: flex;
+  align-items: center;
+  background: #eaf1fb;
+  border-radius: 24px;
+  padding: 8px 16px;
+}
+
+.search-bar svg {
+  width: 20px;
+  height: 20px;
+  fill: #5f6368;
+  margin-right: 8px;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
   font-size: 14px;
-  line-height: 1.5;
 }
 
-/* Status text (the lying UI part) */
-#status {
-  font-style: italic;
-  color: #666;
-  margin-top: 12px;
+/* Right */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* Verification link */
+.icon-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #5f6368;
+}
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1a73e8; /* Google blue */
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.profile-circle {
+  width: 32px;
+  height: 32px;
+  background: #1a73e8;
+  color: white;
+  border-radius: 50%;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+
+.menu-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.logo-text {
+  font-size: 22px;
+  color: #5f6368;
+}
+.profile-avatar:hover {
+  box-shadow: 0 0 0 4px rgba(26,115,232,0.15);
+}
+
+
+.icon-btn:hover {
+  background: #f1f3f4;
+}
+
+/* Email Toolbar */
+.email-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid #dadce0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toolbar-btn {
+  padding: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-btn:hover {
+  background: #f1f3f4;
+}
+
+.toolbar-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #5f6368;
+}
+
+/* Email Container */
+.email-view {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.email-subject {
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: #202124;
+}
+
+.email-header-info {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.sender-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1a73e8;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  margin-right: 12px;
+}
+
+.sender-info {
+  flex: 1;
+}
+
+.sender-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #202124;
+}
+
+.sender-email {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.email-date {
+  font-size: 12px;
+  color: #5f6368;
+  margin-left: auto;
+}
+
+.email-body {
+  padding: 0 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #202124;
+}
+
+.verify-box {
+  background: #f8f9fa;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 24px 0;
+  text-align: center;
+}
+
 .verify-link {
   display: inline-block;
-  margin-top: 12px;
-  padding: 8px 14px;
-  background-color: #0078d4; /* Outlook blue */
+  margin: 16px 0;
+  padding: 10px 24px;
+  background: #1a73e8;
   color: #ffffff;
   text-decoration: none;
-  font-size: 13px;
-  border-radius: 2px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .verify-link:hover {
-  background-color: #005a9e;
+  background: #1765cc;
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
 }
 
-/* Footer */
-.footer {
-  margin-top: 20px;
-  font-size: 11px;
-  color: #777;
+#status {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #5f6368;
+  font-style: italic;
+}
+
+.footer-text {
+  margin-top: 24px;
+  font-size: 12px;
+  color: #5f6368;
+  line-height: 1.5;
 }
