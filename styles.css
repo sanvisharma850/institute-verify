@@ -12,7 +12,7 @@ html, body {
   overflow: hidden;
 }
 
-/* ANALOG BACKGROUND */
+/* ANALOG HORROR BACKGROUND */
 body::before {
   content: "";
   position: fixed;
@@ -35,7 +35,7 @@ body::before {
   50% { opacity: 0.7; }
 }
 
-/* ENTRY SCREEN */
+/* ENTER SCREEN */
 #enter-screen {
   position: fixed;
   inset: 0;
@@ -45,28 +45,18 @@ body::before {
   align-items: center;
   z-index: 9999;
   cursor: pointer;
-}
-
-#enter-screen p {
   letter-spacing: 4px;
   font-size: 18px;
-  animation: pulseFade 2.5s infinite;
 }
 
-@keyframes pulseFade {
-  0%,100% { opacity: 0.9; }
-  50% { opacity: 0.6; }
-}
-
-/* MAIN CONTENT */
-.hidden {
-  display: none;
-}
-
+/* MAIN SCREEN */
 #suspect-screen {
   position: relative;
   z-index: 2;
-  height: 100%;
+}
+
+.hidden {
+  display: none;
 }
 
 .title {
@@ -91,7 +81,6 @@ body::before {
   text-align: center;
   filter: grayscale(100%) contrast(1.2);
   transition: transform 0.6s ease, filter 0.6s ease;
-  z-index: 3;
 }
 
 .suspect-card img {
@@ -115,16 +104,15 @@ body::before {
 #investigate-btn {
   position: fixed;
   bottom: 24px;
-  right: 28px;
-  padding: 12px 18px;
-  border: 1px solid #7a0000;
+  right: 24px;
+  padding: 12px 20px;
+  border: 1px solid #ad0e0e;
   color: #ad0e0e;
   text-decoration: none;
   letter-spacing: 2px;
   font-size: 12px;
-  background: rgba(0,0,0,0.6);
-  z-index: 10;
-  transition: all 0.3s ease;
+  background: rgba(0,0,0,0.7);
+  z-index: 3;
 }
 
 #investigate-btn:hover {
