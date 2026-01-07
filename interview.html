@@ -2,32 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Interview Files</title>
-  <link rel="stylesheet" href="interview.css" />
+  <title>INTERVIEW FILE</title>
+  <link rel="stylesheet" href="interview.css">
 </head>
+
 <body>
 
-<div class="phone">
+  <!-- Back to suspect selection / files screen -->
+  <a href="index.html" class="back">← BACK TO FILES</a>
 
-  <div class="header">
-    <button id="backBtn">← Files</button>
-    <h1>Interviews</h1>
-  </div>
+  <!-- Interview text injected here -->
+  <pre id="interview-text"></pre>
 
-  <div id="suspect-list" class="screen">
-    <button class="suspect" data-id="rhea">Rhea Kapoor</button>
-    <button class="suspect" data-id="mehta">Prof. Mehta</button>
-    <button class="suspect" data-id="ananya">Ananya Singh</button>
-    <button class="suspect" data-id="kunal">Kunal Verma</button>
-  </div>
+  <!-- Background audio (hidden, autoplay via JS) -->
+  <audio id="bg-audio" loop>
+    <source src="assets/audio/ambient_horror.wav" type="audio/mpeg">
+  </audio>
 
-  <div id="interview-screen" class="screen hidden">
-    <h2 id="suspect-name"></h2>
-    <pre id="interview-text"></pre>
-  </div>
+  <!-- Interview logic -->
+  <script src="interview.js"></script>
 
-</div>
-
-<script src="interview.js"></script>
 </body>
 </html>
