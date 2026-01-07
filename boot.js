@@ -1,4 +1,4 @@
 setTimeout(() => {
-  window.location.href = "index.html";
+  window.location.href = "mail.html";
 }, 3200);
 
