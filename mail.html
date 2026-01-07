@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Security alert - Gmail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    // If user has NOT passed login yet, redirect
+    if (!sessionStorage.getItem("session_unlocked")) {
+      window.location.href = "login.html";
+    }
+  </script>
+</head>
+<body>
+
+  
+  <!-- Gmail Header -->
+  <div class="gmail-header">
+    <div class="gmail-logo">
+      <svg class="menu-icon" viewBox="0 0 24 24" fill="#5f6368">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+      </svg>
+      <svg width="109" height="40" viewBox="0 0 109 40" fill="none">
+
+      </svg>
+      <img src="gmail-logo.png" alt="Gmail" style="height: 30px;">
+    </div>
+    <div class="search-bar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f6368">
+        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input type="text" placeholder="Search mail">
+    </div>
+    <div class="header-icons">
+      <button class="icon-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f6368">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+      <button class="icon-btn">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+      <div class="icon-btn profile-avatar">G</div>
+    </div>
+  </div>
+
+  <!-- Email Toolbar -->
+  <div class="email-toolbar">
+    <button class="toolbar-btn" title="Back">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+      </svg>
+    </button>
+    <button class="toolbar-btn" title="Archive">
+      <svg viewBox="0 0 24 24">
+        <path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/>
+      </svg>
+    </button>
+    <button class="toolbar-btn" id="deleteBtn" title="Delete">
+      <svg viewBox="0 0 24 24">
+        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+      </svg>
+    </button>
+    <button class="toolbar-btn" title="Mark as unread">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+      </svg>
+    </button>
+    <button class="toolbar-btn" title="Move to">
+      <svg viewBox="0 0 24 24">
+        <path d="M10 9h4V6h3l-5-5-5 5h3v3zm-1 1H6V7l-5 5 5 5v-3h3v-4zm14 2l-5-5v3h-3v4h3v3l5-5zm-9 3h-4v3H7l5 5 5-5h-3v-3z"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Email View -->
+  <div class="email-view">
+    <div class="email-subject">Security alert</div>
+    
+    <div class="email-header-info">
+      <div class="sender-avatar">G</div>
+      <div class="sender-info">
+        <div class="sender-name">Google</div>
+        <div class="sender-email">&lt;no-reply@accounts.google.com&gt;</div>
+      </div>
+      <div class="email-date">Dec 29, 2025, 10:54 PM (2 days ago)</div>
+    </div>
+
+    <div class="email-body">
+      <div style="margin-bottom: 24px;">
+        <strong style="color: #202124; font-size: 14px;">From:</strong> security@institute-verify.in
+      </div>
+
+      <div style="background: #fef7e0; border-left: 4px solid #f9ab00; padding: 12px 16px; margin-bottom: 24px; border-radius: 4px;">
+        <strong style="color: #202124;">⚠️ IMPORTANT NOTICE — PLEASE READ THIS MESSAGE IN FULL</strong>
+      </div>
+
+      <p style="margin-bottom: 16px;">Dear User,</p>
+      
+      <p style="margin-bottom: 16px;">This message requires your attention.</p>
+      
+      <p style="margin-bottom: 16px;">
+        An authentication event associated with your account has entered an unexpected state. 
+        This does not indicate a breach.
+      </p>
+      
+      <p style="margin-bottom: 16px;">
+        Breaches announce themselves. This did not.
+      </p>
+      
+      <p style="margin-bottom: 16px;">
+        At 00:41 IST, a session was recorded behaving outside permitted parameters. 
+        The session should have terminated. It did not.
+      </p>
+      
+      <p style="margin-bottom: 16px;">
+        Our systems flagged the event due to an inconsistency between access logs and session certificates.
+      </p>
+      
+      <p style="margin-bottom: 16px;">
+        To be clear: Nothing has been compromised. Something has been left unresolved.
+      </p>
+
+      <div class="verify-box">
+        <div style="font-family: Consolas, 'Courier New', monospace; font-size: 13px; color: #5f6368; margin-bottom: 16px;">
+          <strong>Recorded timestamp:</strong> 27-08-86 00:41 IST<br>
+          <strong>Session reference:</strong> A48B24C78
+        </div>
+        
+        <p id="status" style="margin: 12px 0;">Validating session…</p>
+      </div>
+
+      <p style="margin: 24px 0 16px 0;">
+        Until this inconsistency is addressed, access continuity cannot be guaranteed.
+      </p>
+
+      <div style="background: #f8f9fa; border: 1px solid #dadce0; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center;">
+        <strong style="font-size: 16px; color: #202124; display: block; margin-bottom: 16px;">Action Required</strong>
+        <p style="margin-bottom: 16px;">Confirm the security certificate bound to your current session.</p>
+        <a href="verified.html" class="verify-link">
+          Confirm Security Certificate
+        </a>
+      </div>
+
+      <p style="margin-bottom: 16px;">
+        Failure to act will result in automatic restriction and archival of the session for internal review.
+      </p>
+
+      <div class="footer-text" style="border-top: 1px solid #dadce0; padding-top: 16px; margin-top: 32px;">
+        <p style="margin-bottom: 8px;">This message was generated by an internal verification service.</p>
+        <p style="margin-bottom: 8px;">Relay node: relay-goyal-9495</p>
+        <p style="margin-bottom: 8px;">Footer reference ID: SYS-INT-185479</p>
+        <p style="margin-bottom: 8px;"><em>Manual replies are not monitored.</em></p>
+        <p style="margin-bottom: 0; font-style: italic; color: #5f6368;">Some events are logged. Others are only noticed when they repeat.</p>
+      </div>
+    </div>
+  </div>
+    
+  <script>
+    // Delete button functionality
+    document.getElementById('deleteBtn').addEventListener('click', function() {
+  window.location.href = "https://sanvisharma850.github.io/access-logs/index.html";
+});
+
+    //168293339
+    // Status text progression
+    const statusText = [
+      "Validating session…",
+      "Checking certificate chain…",
+      "Cross-referencing internal logs…",
+      "Awaiting user confirmation…"
+    ];
+    //AJGDNT
+    let i = 0;
+    setInterval(() => {
+      document.getElementById("status").innerText = statusText[i % statusText.length];
+      i++;
+    }, 1400);
+  </script>
+</body>
+</html>
