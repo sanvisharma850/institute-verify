@@ -1,24 +1,30 @@
 const enterScreen = document.getElementById("enter-screen");
-const suspectScreen = document.getElementById("suspect-screen");
-const audio = document.getElementById("bg-audio");
+const suspectsScreen = document.getElementById("suspects-screen");
+const enterBtn = document.getElementById("enter-btn");
+const music = document.getElementById("bg-audio");
 
-enterScreen.addEventListener("click", () => {
-  // Start audio (browser-legal user gesture)
-  audio.volume = 0.25;
-  audio.play().catch(() => {});
+// If returning from interview, skip ENTER screen
+if (sessionStorage.getItem("fromInterview") === "true") {
+  sessionStorage.removeItem("fromInterview");
 
-  // Reveal content
-  enterScreen.remove();
-  suspectScreen.classList.remove("hidden");
+  enterScreen.classList.add("hidden");
+  suspectsScreen.classList.remove("hidden");
 
-  // Persist state
-  localStorage.setItem("caseOpened", "true");
+  music.volume = 0.45;
+  music.play().catch(() => {});
+}
+
+// Normal ENTER CASE flow
+enterBtn.addEventListener("click", () => {
+  enterScreen.classList.add("hidden");
+  suspectsScreen.classList.remove("hidden");
+
+  music.volume = 0.45;
+  music.play().catch(() => {});
 });
 
-// Restore state on refresh
-if (localStorage.getItem("caseOpened") === "true") {
-  enterScreen?.remove();
-  suspectScreen.classList.remove("hidden");
-  audio.volume = 0.15;
-  audio.play().catch(() => {});
-}
+// Prevent back-button abuse inside app
+history.pushState(null, "", location.href);
+window.addEventListener("popstate", () => {
+  history.pushState(null, "", location.href);
+});

@@ -9,7 +9,10 @@
 <body>
 
   <!-- Back to suspect selection / files screen -->
-  <a href="index.html" class="back">← BACK TO FILES</a>
+<a href="index.html" onclick="sessionStorage.setItem('fromInterview', 'true')">
+  ← BACK TO FILES
+</a>
+
 
   <!-- Interview text injected here -->
   <pre id="interview-text"></pre>

@@ -12,7 +12,7 @@ html, body {
   overflow: hidden;
 }
 
-/* ANALOG HORROR BACKGROUND */
+/* ANALOG HORROR */
 body::before {
   content: "";
   position: fixed;
@@ -28,6 +28,7 @@ body::before {
     );
   animation: flicker 6s infinite;
   z-index: 0;
+  pointer-events: none; /* 🔥 THIS FIXES CLICK ISSUE */
 }
 
 @keyframes flicker {
@@ -35,43 +36,45 @@ body::before {
   50% { opacity: 0.7; }
 }
 
-/* ENTER SCREEN */
-#enter-screen {
-  position: fixed;
-  inset: 0;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  cursor: pointer;
-  letter-spacing: 4px;
-  font-size: 18px;
-}
-
-/* MAIN SCREEN */
-#suspect-screen {
+.screen {
   position: relative;
   z-index: 2;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .hidden {
   display: none;
 }
 
+/* ENTER SCREEN */
+#enter-btn {
+  margin-top: 30px;
+  padding: 14px 36px;
+  background: transparent;
+  border: 1px solid #b30000;
+  color: #b30000;
+  cursor: pointer;
+}
+
+#enter-btn:hover {
+  background: #b30000;
+  color: black;
+}
+
+/* SUSPECTS */
 .title {
-  text-align: center;
+  margin-top: 20px;
   letter-spacing: 4px;
-  margin-top: 40px;
-  opacity: 0.85;
 }
 
 .suspect-row {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 50px;
-  height: calc(100vh - 160px);
+  gap: 40px;
+  margin-top: 40px;
 }
 
 .suspect-card {
@@ -79,43 +82,38 @@ body::before {
   text-decoration: none;
   color: inherit;
   text-align: center;
-  filter: grayscale(100%) contrast(1.2);
-  transition: transform 0.6s ease, filter 0.6s ease;
+
+  filter: grayscale(100%) contrast(1.15);
+  transform: scale(1);
+
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.6s ease,
+    box-shadow 0.6s ease;
+
+  z-index: 3;
 }
+
 
 .suspect-card img {
   width: 100%;
   border-radius: 10px;
 }
 
-.suspect-card span {
-  display: block;
-  margin-top: 12px;
-  letter-spacing: 2px;
-  font-size: 14px;
-}
-
 .suspect-card:hover {
   transform: scale(1.08);
-  filter: grayscale(30%) brightness(1.1);
+  filter: grayscale(20%) brightness(1.1);
+  box-shadow: 0 0 40px rgba(173, 14, 14, 0.25);
 }
 
-/* INVESTIGATE BUTTON */
+
+/* INVESTIGATE */
 #investigate-btn {
   position: fixed;
   bottom: 24px;
-  right: 24px;
-  padding: 12px 20px;
-  border: 1px solid #ad0e0e;
+  right: 28px;
+  padding: 12px 18px;
+  border: 1px solid #7a0000;
   color: #ad0e0e;
   text-decoration: none;
-  letter-spacing: 2px;
-  font-size: 12px;
-  background: rgba(0,0,0,0.7);
-  z-index: 3;
-}
-
-#investigate-btn:hover {
-  background: #ad0e0e;
-  color: #000;
 }
