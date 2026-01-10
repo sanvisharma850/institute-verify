@@ -16,7 +16,7 @@ function choosePath(option) {
     document.body.style.transition = "opacity 1s ease";
     document.body.style.opacity = "0";
     setTimeout(() => {
-      window.location.href = "compliance_record.html";
+      window.location.href = "stage1.html";
     }, 1000);
   }
 }
