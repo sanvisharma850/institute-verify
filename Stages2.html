@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATABASE FORENSIC RECOVERY</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            border: 2px solid #0ff;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #333;
+            opacity: 0.5;
+        }
+
+        .progress-step:last-child {
+            border-right: none;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #0ff;
+        }
+
+        .progress-step.complete {
+            opacity: 1;
+            color: #00ff88;
+        }
+
+        .database-viewer {
+            background: #000;
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .sql-terminal {
+            background: #0d0d0d;
+            border: 1px solid #0ff;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .sql-query {
+            color: #00ff88;
+            margin-bottom: 15px;
+        }
+
+        .table-result {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .table-result th {
+            background: #1a1a1a;
+            color: #0ff;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #333;
+            font-size: 12px;
+        }
+
+        .table-result td {
+            padding: 10px 12px;
+            border: 1px solid #333;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .table-result tr:nth-child(even) {
+            background: #0a0a0a;
+        }
+
+        .table-result tr:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .deleted-row {
+            background: rgba(255, 68, 68, 0.1) !important;
+            color: #ff8888;
+        }
+
+        .task-panel {
+            background: linear-gradient(135deg, #0a1a1a, #0a0a0a);
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .injection-playground {
+            background: #0d0d0d;
+            border: 2px solid #333;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .query-input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+
+        .query-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .hint-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .recovered-message {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: sans-serif;
+            line-height: 2;
+        }
+
+        .message-bubble {
+            background: #2a2a2a;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message-sender {
+            color: #4a9eff;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .message-time {
+            color: #888;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="color: #00ff88; margin-bottom: 10px;">✓ ATTACKER IP CONFIRMED: 192.168.1.89 (Ananya Singh)</div>
+            <h1 style="color: #0ff;">DATABASE FORENSIC RECOVERY</h1>
+            <p style="margin-top: 10px; color: #888;">Recovering deleted WhatsApp messages from SQLite backup...</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step complete">
+                <div style="font-size: 24px;">✓</div>
+                <div style="font-size: 11px; margin-top: 5px;">PACKET ANALYSIS</div>
+            </div>
+            <div class="progress-step active">
+                <div style="font-size: 24px;">⚡</div>
+                <div style="font-size: 11px; margin-top: 5px;">MESSAGE RECOVERY</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🔐</div>
+                <div style="font-size: 11px; margin-top: 5px;">EXPLOIT ANALYSIS</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🎯</div>
+                <div style="font-size: 11px; margin-top: 5px;">FINAL ANALYSIS</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 170, 0, 0.1); border-left: 4px solid #ffaa00; padding: 20px; margin: 30px 0;">
+            <strong style="color: #ffaa00;">DATABASE ANALYSIS:</strong>
+            <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                Dr. Goyal's phone backup contains a SQLite database (msgstore.db.crypt14). The attacker used 
+                WhatsApp's API to bulk-delete messages at 01:18 AM, but database remnants remain in unallocated space. 
+                We need to recover the deleted conversation between Dr. Goyal and an unknown contact.
+            </p>
+        </div>
+
+        <div class="database-viewer">
+            <h2 style="color: #0ff; margin-bottom: 20px;">🗄️ SQLITE DATABASE: msgstore.db</h2>
+
+            <div class="sql-terminal">
+                <div class="sql-query">
+                    sqlite> SELECT * FROM messages WHERE timestamp > '2026-01-10 00:50:00' ORDER BY timestamp;
+                </div>
+
+                <table class="table-result">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>SENDER</th>
+                            <th>RECIPIENT</th>
+                            <th>MESSAGE</th>
+                            <th>TIMESTAMP</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1247</td>
+                            <td>+91-9385473627</td>
+                            <td>Dr. Goyal</td>
+                            <td>We need to talk about the repo...</td>
+                            <td>00:51:33</td>
+                            <td>DELIVERED</td>
+                        </tr>
+                        <tr>
+                            <td>1248</td>
+                            <td>Dr. Goyal</td>
+                            <td>+91-9385473627</td>
+                            <td>I've been reviewing your submissions.</td>
+                            <td>00:52:15</td>
+                            <td>READ</td>
+                        </tr>
+                        <tr class="deleted-row">
+                            <td>1249</td>
+                            <td>+91-8373765894</td>
+                            <td>Dr. Goyal</td>
+                            <td>[DELETED]</td>
+                            <td>01:03:22</td>
+                            <td>DELETED_API</td>
+                        </tr>
+                        <tr class="deleted-row">
+                            <td>1250</td>
+                            <td>Dr. Goyal</td>
+                            <td>+91-8373765894</td>
+                            <td>[DELETED]</td>
+                            <td>01:04:17</td>
+                            <td>DELETED_API</td>
+                        </tr>
+                        <tr class="deleted-row">
+                            <td>1251</td>
+                            <td>+91-8373765894</td>
+                            <td>Dr. Goyal</td>
+                            <td>[DELETED]</td>
+                            <td>01:05:41</td>
+                            <td>DELETED_API</td>
+                        </tr>
+                        <tr>
+                            <td>1252</td>
+                            <td>+91-9944836684</td>
+                            <td>Dr. Goyal</td>
+                            <td>Please sir, one more chance...</td>
+                            <td>01:08:19</td>
+                            <td>DELIVERED</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="color: #ff4444; margin-top: 15px;">
+                    ⚠ 3 messages deleted via API at 01:18:47 AM
+                </div>
+            </div>
+
+            <div style="background: #0d0d0d; padding: 20px; margin: 20px 0; border-left: 3px solid #0ff;">
+                <strong style="color: #0ff;">PHONE NUMBER LOOKUP:</strong><br>
+                <span style="color: #888; font-size: 13px; line-height: 2;">
+                +91-9385473627 → Rhea Kapoor (Ex-girlfriend)<br>
+                +91-8373765894 → <span style="color: #ff4444;">Ananya Singh (Cybersecurity Club President)</span><br>
+                +91-9944836684 → Kunal Verma (Research Assistant)
+                </span>
+            </div>
+        </div>
+
+        <div class="task-panel">
+            <h2 style="color: #0ff; margin-bottom: 20px;">🔍 TASK 2: SQL INJECTION TO RECOVER DELETED MESSAGES</h2>
+            <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+                The deleted messages (IDs 1249-1251) are marked DELETED_API but the actual text still exists in the 
+                database's WAL (Write-Ahead Logging) file. Use SQL to query the shadow table that contains pre-deletion 
+                data. The correct query will reveal what Ananya and Dr. Goyal discussed.
+            </p>
+
+            <div class="hint-box">
+                <strong style="color: #ffaa00;">SQL FORENSICS HINT:</strong>
+                <p style="color: #888; font-size: 13px; margin-top: 10px; line-height: 1.6;">
+                    • SQLite maintains shadow tables for deleted data: `messages_shadow`<br>
+                    • To recover deleted rows, query: SELECT * FROM messages_shadow WHERE status='DELETED_API'<br>
+                    • Filter by sender phone number: +91-8373765894 (Ananya's number)<br>
+                    • Order by timestamp to see the conversation chronologically
+                </p>
+            </div>
+
+            <div class="injection-playground">
+                <label style="color: #0ff; display: block; margin-bottom: 10px;">Enter SQL Query:</label>
+                <input 
+                    type="text" 
+                    class="query-input" 
+                    id="sqlQuery"
+                    placeholder="SELECT * FROM messages_shadow WHERE ..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <button class="btn" onclick="executeQuery()">EXECUTE QUERY</button>
+                <div id="queryResult" style="margin-top: 20px; display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function executeQuery() {
+            const query = document.getElementById('sqlQuery').value.toLowerCase();
+            const resultDiv = document.getElementById('queryResult');
+            
+            // Check if query is correct
+            const hasMessagesShadow = query.includes('messages_shadow');
+            const hasDeletedAPI = query.includes("'deleted_api'");
+            const hasAnanyaNumber = query.includes('+91-8373765894');
+            
+            if (hasMessagesShadow && hasDeletedAPI && hasAnanyaNumber) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 255, 255, 0.1); border: 2px solid #0ff; padding: 25px; border-radius: 8px;">
+                        <div style="color: #0ff; font-size: 20px; margin-bottom: 15px;">✓ QUERY SUCCESSFUL - MESSAGES RECOVERED</div>
+                        
+                        <table class="table-result">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>SENDER</th>
+                                    <th>MESSAGE</th>
+                                    <th>TIMESTAMP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1249</td>
+                                    <td>+91-8373765894</td>
+                                    <td style="color: #ff8888;">Sir, I need to explain about the competition results. It's not what you think.</td>
+                                    <td>01:03:22</td>
+                                </tr>
+                                <tr>
+                                    <td>1250</td>
+                                    <td>Dr. Goyal</td>
+                                    <td>Ananya, I checked the server logs. You accessed the test questions 3 days before the competition.</td>
+                                    <td>01:04:17</td>
+                                </tr>
+                                <tr>
+                                    <td>1251</td>
+                                    <td>+91-8373765894</td>
+                                    <td style="color: #ff8888;">You don't understand! The scholarship committee is reviewing applications tomorrow. If this gets out, I lose everything. Please delete those logs.</td>
+                                    <td>01:05:41</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="recovered-message" style="margin-top: 30px;">
+                            <h3 style="color: #ff4444; margin-bottom: 15px;">RECOVERED CONVERSATION:</h3>
+                            
+                            <div class="message-bubble" style="margin-left: auto; background: #1a3a3a;">
+                                <div class="message-sender" style="color: #ff69b4;">Ananya Singh</div>
+                                <div>Sir, I need to explain about the competition results. It's not what you think.</div>
+                                <div class="message-time">01:03:22 AM</div>
+                            </div>
+
+                            <div class="message-bubble">
+                                <div class="message-sender">Dr. Goyal</div>
+                                <div>Ananya, I checked the server logs. You accessed the test questions 3 days before the competition.</div>
+                                <div class="message-time">01:04:17 AM</div>
+                            </div>
+
+                            <div class="message-bubble" style="margin-left: auto; background: #1a3a3a;">
+                                <div class="message-sender" style="color: #ff69b4;">Ananya Singh</div>
+                                <div style="color: #ff8888;">You don't understand! The scholarship committee is reviewing applications tomorrow. If this gets out, I lose everything. Please delete those logs.</div>
+                                <div class="message-time">01:05:41 AM</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 20px; margin-top: 25px;">
+                            <strong style="color: #ff4444;">CRITICAL EVIDENCE:</strong><br>
+                            <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                            • Ananya accessed competition questions before the test (academic fraud)<br>
+                            • She won the cybersecurity competition using stolen information<br>
+                            • Scholarship application based on fraudulent achievement<br>
+                            • Begged Dr. Goyal to delete evidence (he refused)<br>
+                            • Messages deleted 12 minutes after his death<br><br>
+                            
+                            <span style="color: #0ff;">Proceeding to exploit analysis...</span>
+                            </p>
+                        </div>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'Stage3.html';
+                }, 8000);
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(100, 100, 100, 0.2); border: 2px solid #666; padding: 20px; border-radius: 8px;">
+                        <div style="color: #888; font-size: 18px;">✗ QUERY FAILED</div>
+                        <p style="color: #888; margin-top: 10px;">
+                            Incorrect query. Make sure to:<br>
+                            • Query the messages_shadow table<br>
+                            • Filter by status='DELETED_API'<br>
+                            • Include Ananya's phone number (+91-8373765894)
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Allow Enter key
+        document.getElementById('sqlQuery').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                executeQuery();
+            }
+        });
+    </script>
+</body>
+</html>

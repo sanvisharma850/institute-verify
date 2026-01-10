@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NETWORK TRAFFIC ANALYSIS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0ff;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            border: 2px solid #0ff;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #333;
+            opacity: 0.5;
+        }
+
+        .progress-step:last-child {
+            border-right: none;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #0ff;
+        }
+
+        .progress-step.complete {
+            opacity: 1;
+            color: #00ff88;
+        }
+
+        .packet-analyzer {
+            background: #000;
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .terminal-output {
+            background: #0d0d0d;
+            border: 1px solid #0ff;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 12px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .packet-line {
+            margin: 5px 0;
+            padding: 5px;
+            transition: all 0.3s;
+        }
+
+        .packet-line:hover {
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .packet-line.suspicious {
+            background: rgba(255, 170, 0, 0.1);
+            border-left: 3px solid #ffaa00;
+            padding-left: 10px;
+        }
+
+        .packet-line.critical {
+            background: rgba(255, 68, 68, 0.1);
+            border-left: 3px solid #ff4444;
+            padding-left: 10px;
+            animation: pulse-packet 2s infinite;
+        }
+
+        @keyframes pulse-packet {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(255, 68, 68, 0.6); }
+        }
+
+        .timestamp {
+            color: #ffaa00;
+            margin-right: 10px;
+        }
+
+        .src-ip {
+            color: #4a9eff;
+            margin-right: 10px;
+        }
+
+        .dst-ip {
+            color: #ff69b4;
+            margin-right: 10px;
+        }
+
+        .protocol {
+            color: #00ff88;
+            margin-right: 10px;
+        }
+
+        .task-panel {
+            background: linear-gradient(135deg, #0a1a1a, #0a0a0a);
+            border: 2px solid #0ff;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .ip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .ip-card {
+            background: #0d0d0d;
+            border: 2px solid #333;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+
+        .ip-card:hover {
+            border-color: #0ff;
+            background: rgba(0, 255, 255, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .ip-card.selected {
+            border-color: #0ff;
+            background: rgba(0, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
+
+        .ip-address {
+            font-size: 18px;
+            color: #0ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .ip-details {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.8;
+        }
+
+        .btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .metric-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .metric-card {
+            background: #0d0d0d;
+            border: 1px solid #0ff;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            color: #0ff;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="color: #00ff88; margin-bottom: 10px;">✓ HABIT PATTERN DETECTED: Password Reuse</div>
+            <h1 style="color: #0ff; font-size: 32px;">NETWORK PACKET ANALYSIS</h1>
+            <p style="margin-top: 10px; color: #888;">Analyzing Dr. Goyal's phone unlock sequence...</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step active">
+                <div style="font-size: 24px;">⚡</div>
+                <div style="font-size: 11px; margin-top: 5px;">PACKET ANALYSIS</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">📱</div>
+                <div style="font-size: 11px; margin-top: 5px;">MESSAGE RECOVERY</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🔐</div>
+                <div style="font-size: 11px; margin-top: 5px;">EXPLOIT ANALYSIS</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🎯</div>
+                <div style="font-size: 11px; margin-top: 5px;">FINAL ANALYSIS</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(255, 170, 0, 0.1); border-left: 4px solid #ffaa00; padding: 20px; margin: 30px 0;">
+            <strong style="color: #ffaa00;">CRITICAL DISCOVERY:</strong>
+            <p style="color: #ccc; margin-top: 10px; line-height: 1.8;">
+                Phone unlock successful. However, network logs show suspicious traffic patterns BEFORE and AFTER 
+                Dr. Goyal's death. Someone with advanced technical skills was monitoring his communications in real-time.
+            </p>
+        </div>
+
+        <div class="packet-analyzer">
+            <h2 style="color: #0ff; margin-bottom: 20px;">📡 WIRESHARK CAPTURE: Campus Network</h2>
+            
+            <div style="background: #0d0d0d; padding: 15px; margin-bottom: 20px; border-left: 3px solid #0ff;">
+                <strong style="color: #0ff;">CAPTURE METADATA:</strong><br>
+                <span style="color: #888; font-size: 13px;">
+                Interface: WiFi (CAMPUS_5GHz)<br>
+                Duration: 00:50 - 01:35 AM<br>
+                Total Packets: 14,827<br>
+                Filtered: Suspicious traffic patterns
+                </span>
+            </div>
+
+            <div class="metric-display">
+                <div class="metric-card">
+                    <div class="metric-label">TOTAL CONNECTIONS</div>
+                    <div class="metric-value">247</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ENCRYPTED SESSIONS</div>
+                    <div class="metric-value">189</div>
+                </div>
+                <div class="metric-card" style="border-color: #ff4444;">
+                    <div class="metric-label">ANOMALOUS TRAFFIC</div>
+                    <div class="metric-value" style="color: #ff4444;">12</div>
+                </div>
+            </div>
+
+            <div class="terminal-output" id="packetLog">
+                <div style="color: #0ff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">
+                    TIME | SRC IP | DST IP | PROTOCOL | INFO
+                </div>
+                
+                <div class="packet-line">
+                    <span class="timestamp">00:52:14</span>
+                    <span class="src-ip">192.168.1.47</span>
+                    <span class="dst-ip">192.168.1.1</span>
+                    <span class="protocol">HTTPS</span>
+                    <span style="color: #888;">TLS handshake (Normal traffic)</span>
+                </div>
+
+                <div class="packet-line">
+                    <span class="timestamp">00:58:31</span>
+                    <span class="src-ip">192.168.1.23</span>
+                    <span class="dst-ip">192.168.1.47</span>
+                    <span class="protocol">TCP</span>
+                    <span style="color: #888;">Port scan attempt (Blocked)</span>
+                </div>
+
+                <div class="packet-line suspicious">
+                    <span class="timestamp">01:01:17</span>
+                    <span class="src-ip">192.168.1.89</span>
+                    <span class="dst-ip">192.168.1.47</span>
+                    <span class="protocol">ARP</span>
+                    <span style="color: #ffaa00;">ARP spoofing detected - Suspicious timing</span>
+                </div>
+
+                <div class="packet-line">
+                    <span class="timestamp">01:03:42</span>
+                    <span class="src-ip">192.168.1.47</span>
+                    <span class="dst-ip">8.8.8.8</span>
+                    <span class="protocol">DNS</span>
+                    <span style="color: #888;">Domain lookup (Normal)</span>
+                </div>
+
+                <div class="packet-line critical">
+                    <span class="timestamp">01:05:23</span>
+                    <span class="src-ip">192.168.1.89</span>
+                    <span class="dst-ip">192.168.1.47</span>
+                    <span class="protocol">MITM</span>
+                    <span style="color: #ff4444;">Man-in-the-Middle attack active - Intercepting traffic</span>
+                </div>
+
+                <div class="packet-line">
+                    <span class="timestamp">01:08:15</span>
+                    <span class="src-ip">192.168.1.47</span>
+                    <span class="dst-ip">192.168.1.1</span>
+                    <span class="protocol">HTTPS</span>
+                    <span style="color: #888;">WhatsApp message sync</span>
+                </div>
+
+                <div class="packet-line critical">
+                    <span class="timestamp">01:09:44</span>
+                    <span class="src-ip">192.168.1.89</span>
+                    <span class="dst-ip">192.168.1.47</span>
+                    <span class="protocol">TCP</span>
+                    <span style="color: #ff4444;">Data exfiltration - 2.4MB encrypted payload</span>
+                </div>
+
+                <div class="packet-line">
+                    <span class="timestamp">01:12:08</span>
+                    <span class="src-ip">192.168.1.47</span>
+                    <span class="dst-ip">192.168.1.1</span>
+                    <span class="protocol">HTTPS</span>
+                    <span style="color: #888;">GitHub API call (Normal)</span>
+                </div>
+
+                <div class="packet-line suspicious">
+                    <span class="timestamp">01:15:31</span>
+                    <span class="src-ip">192.168.1.89</span>
+                    <span class="dst-ip">192.168.1.47</span>
+                    <span class="protocol">SSH</span>
+                    <span style="color: #ffaa00;">SSH connection attempt - Unusual hour</span>
+                </div>
+
+                <div class="packet-line critical">
+                    <span class="timestamp">01:18:52</span>
+                    <span class="src-ip">192.168.1.89</span>
+                    <span class="dst-ip">192.168.1.1</span>
+                    <span class="protocol">HTTPS</span>
+                    <span style="color: #ff4444;">API call to WhatsApp Web - Bulk delete operation</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="task-panel">
+            <h2 style="color: #0ff; margin-bottom: 20px;">🔍 TASK 1: IDENTIFY THE ATTACKER'S IP</h2>
+            <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+                The packet capture shows multiple suspicious connections. One IP address appears repeatedly in critical 
+                attack patterns: ARP spoofing, MITM attacks, data exfiltration, and message deletion. This device was 
+                actively monitoring and manipulating Dr. Goyal's communications.
+            </p>
+
+            <div class="hint-box">
+                <strong style="color: #ffaa00;">NETWORK FORENSICS HINT:</strong>
+                <p style="color: #888; font-size: 13px; margin-top: 10px; line-height: 1.6;">
+                    • ARP spoofing allows an attacker to intercept traffic between two devices<br>
+                    • MITM (Man-in-the-Middle) attacks require the attacker to be on the same network<br>
+                    • Campus IP range: 192.168.1.x (Student Housing: .50-.99, Faculty: .1-.49)<br>
+                    • Look for the IP that appears in CRITICAL packets (red highlights)<br>
+                    • Cross-reference with campus housing database
+                </p>
+            </div>
+
+            <div class="ip-grid">
+                <div class="ip-card" onclick="selectIP(1)" id="ip1">
+                    <div class="ip-address">192.168.1.47</div>
+                    <div class="ip-details">
+                        <strong>Owner:</strong> Dr. Goyal<br>
+                        <strong>Location:</strong> Faculty Residence<br>
+                        <strong>Device:</strong> iPhone 13<br>
+                        <strong>Role:</strong> Victim
+                    </div>
+                </div>
+
+                <div class="ip-card" onclick="selectIP(2)" id="ip2">
+                    <div class="ip-address">192.168.1.23</div>
+                    <div class="ip-details">
+                        <strong>Owner:</strong> Unknown<br>
+                        <strong>Location:</strong> Off-campus<br>
+                        <strong>Device:</strong> Unknown scanner<br>
+                        <strong>Activity:</strong> Port scan (blocked)
+                    </div>
+                </div>
+
+                <div class="ip-card" onclick="selectIP(3)" id="ip3">
+                    <div class="ip-address">192.168.1.89</div>
+                    <div class="ip-details">
+                        <strong>Owner:</strong> Ananya Singh<br>
+                        <strong>Location:</strong> Student Housing C-304<br>
+                        <strong>Device:</strong> Kali Linux laptop<br>
+                        <strong>Activity:</strong> Multiple MITM attacks
+                    </div>
+                </div>
+
+                <div class="ip-card" onclick="selectIP(4)" id="ip4">
+                    <div class="ip-address">8.8.8.8</div>
+                    <div class="ip-details">
+                        <strong>Owner:</strong> Google DNS<br>
+                        <strong>Location:</strong> External<br>
+                        <strong>Service:</strong> DNS resolver<br>
+                        <strong>Activity:</strong> Normal lookup
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="verifyBtn" onclick="verifyIP()" disabled>TRACE IP GEOLOCATION</button>
+            <div id="result" style="margin-top: 20px; display: none;"></div>
+        </div>
+
+        <div style="background: #0d0d0d; padding: 20px; border: 1px solid #333; margin-top: 30px;">
+            <h3 style="color: #0ff; margin-bottom: 10px;">PRELIMINARY ANALYSIS:</h3>
+            <p style="color: #888; font-size: 13px; line-height: 1.8;">
+                → Attack originated from campus network (same subnet as victim)<br>
+                → Attacker had real-time visibility into victim's communications<br>
+                → Data exfiltration occurred 2 minutes after death<br>
+                → Message deletion happened 11 minutes after death (cover-up)<br>
+                → Technical sophistication indicates advanced cybersecurity knowledge
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let selectedIP = null;
+
+        function selectIP(num) {
+            // Remove previous selection
+            document.querySelectorAll('.ip-card').forEach(card => card.classList.remove('selected'));
+            
+            // Select new
+            document.getElementById(`ip${num}`).classList.add('selected');
+            selectedIP = num;
+            
+            document.getElementById('verifyBtn').disabled = false;
+        }
+
+        function verifyIP() {
+            const resultDiv = document.getElementById('result');
+            
+            if (selectedIP === 3) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 255, 255, 0.1); border: 2px solid #0ff; padding: 25px; border-radius: 8px;">
+                        <div style="color: #0ff; font-size: 20px; margin-bottom: 15px;">✓ ATTACKER IP IDENTIFIED</div>
+                        <p style="color: #ccc; line-height: 2;">
+                            <strong>Source IP: 192.168.1.89</strong><br>
+                            <strong>Registered Owner: Ananya Singh</strong><br>
+                            <strong>Location: Student Housing Block C, Room 304</strong><br><br>
+                            
+                            <strong style="color: #ffaa00;">ATTACK TIMELINE:</strong><br>
+                            • 01:01 AM - ARP spoofing initiated (positions for MITM)<br>
+                            • 01:05 AM - Active traffic interception begins<br>
+                            • 01:09 AM - Data exfiltration (2.4MB - likely chat history)<br>
+                            • 01:18 AM - Bulk message deletion via WhatsApp API<br><br>
+                            
+                            <strong style="color: #ff4444;">CRITICAL FINDING:</strong><br>
+                            Device runs Kali Linux - specialized penetration testing OS<br>
+                            Attack patterns match textbook MITM implementation<br>
+                            Owner: President of Cybersecurity Club<br><br>
+                            
+                            <span style="color: #0ff;">Proceeding to message recovery analysis...</span>
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'Stage2.html';
+                }, 5000);
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(100, 100, 100, 0.2); border: 2px solid #666; padding: 20px; border-radius: 8px;">
+                        <div style="color: #888; font-size: 18px;">✗ INCORRECT IP</div>
+                        <p style="color: #888; margin-top: 10px;">
+                            This IP doesn't match the attack patterns. Look for the IP in CRITICAL (red) packets.
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
