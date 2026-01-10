@@ -1,6 +1,7 @@
 const interviews = {
   rhea: `
 INTERVIEW 01: RHEA KAPOOR
++91 9385473627
 
 Relationship: Ex-girlfriend
 Tone: Defensive, sharp-edged, wounded pride barely stitched together
@@ -42,6 +43,7 @@ If you’re looking for method… you’re wasting your time on me.
 
   mehta: `
 INTERVIEW 02: PROF. MEHTA
++91 93887743657
 
 Relationship: Project mentor
 Tone: Controlled, irritated, precise to the point of arrogance
@@ -80,6 +82,7 @@ It means knowing when not to touch something—especially when it’s unstable.
 
   ananya: `
 INTERVIEW 03: ANANYA SINGH
++91 8373765894
 
 Relationship: Cybersecurity Club President
 Tone: Calm, surgical, unsettlingly self-aware
@@ -121,6 +124,7 @@ But they also don’t scream when something is missing.
 
   kunal: `
 INTERVIEW 04: KUNAL VERMA
++91 9944836684
 
 Relationship: Research assistant, roommate
 Tone: Emotional, fractured
