@@ -101,16 +101,13 @@
     </div>
 
     <div class="choices">
-
       <button class="choice-btn" onclick="choose('habit')">
         Option A — Habit
       </button>
-      
+
       <button class="choice-btn" onclick="choose('encryption')">
         Option B — Encryption
       </button>
-
-      
     </div>
 
     <p id="status" class="status">
@@ -124,6 +121,7 @@
       status.innerText = "Unlocking device…";
 
       setTimeout(() => {
+
         if (answer === "habit") {
           // Correct path
           document.body.innerHTML = `
@@ -147,7 +145,7 @@
             </div>
           `;
         } else {
-          // Wrong-but-working path (misdirection)
+          // Encryption path → misdirection + redirect
           document.body.innerHTML = `
             <div class="panel">
               <h2>Device Unlocked</h2>
@@ -171,11 +169,18 @@
               </div>
 
               <p class="status">
-                Timestamp integrity: inconsistent.
+                Timestamp integrity: inconsistent.<br>
+                Escalating for deeper inspection…
               </p>
             </div>
           `;
+
+          // 🔗 DELAYED REDIRECT TO STAGE 1
+          setTimeout(() => {
+            window.location.href = "Stage1.html";
+          }, 2500);
         }
+
       }, 1200);
     }
   </script>
