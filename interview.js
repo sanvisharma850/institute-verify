@@ -3,6 +3,7 @@ const interviews = {
 INTERVIEW 01: RHEA KAPOOR
 +91 9385473627
 HO_LAP_1502
+Card F-2847
 
 Relationship: Ex-girlfriend
 Tone: Defensive, sharp-edged, wounded pride barely stitched together
@@ -46,6 +47,7 @@ If you’re looking for method… you’re wasting your time on me.
 INTERVIEW 02: PROF. MEHTA
 +91 93887743657
 HO_LAP_1730
+Card F-2846
 
 Relationship: Project mentor
 Tone: Controlled, irritated, precise to the point of arrogance
@@ -86,6 +88,7 @@ It means knowing when not to touch something—especially when it’s unstable.
 INTERVIEW 03: ANANYA SINGH
 +91 8373765894
 HO_LAP_3417
+Card F-2853
 
 Relationship: Cybersecurity Club President
 Tone: Calm, surgical, unsettlingly self-aware
@@ -129,6 +132,7 @@ But they also don’t scream when something is missing.
 INTERVIEW 04: KUNAL VERMA
 +91 9944836684
 HO_LAP_0382
+Card F-2865
 
 Relationship: Research assistant, roommate
 Tone: Emotional, fractured
