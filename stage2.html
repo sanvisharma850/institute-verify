@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELETED MESSAGE RECOVERY</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            border: 2px solid #00ff41;
+            padding: 20px;
+            margin-bottom: 30px;
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background: #0d0d0d;
+            border: 1px solid #333;
+        }
+
+        .progress-step {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-right: 1px solid #333;
+            opacity: 0.5;
+        }
+
+        .progress-step:last-child {
+            border-right: none;
+        }
+
+        .progress-step.active {
+            opacity: 1;
+            color: #00ff88;
+        }
+
+        .progress-step.complete {
+            opacity: 1;
+            color: #00ff41;
+        }
+
+        .chat-recovery-box {
+            background: #000;
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+
+        .message-fragment {
+            background: #1a1a1a;
+            border-left: 3px solid #ffaa00;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            position: relative;
+        }
+
+        .message-fragment::before {
+            content: 'PARTIAL RECOVERY';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: #0a0a0a;
+            padding: 0 8px;
+            font-size: 10px;
+            color: #ffaa00;
+        }
+
+        .corrupted-text {
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 2px 5px;
+            font-style: italic;
+        }
+
+        .fragment-bank {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+            padding: 25px;
+            background: #0d0d0d;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+
+        .fragment-card {
+            background: #1a1a1a;
+            border: 2px solid #00ff41;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+            position: relative;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .fragment-card:hover {
+            background: #00ff41;
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.4);
+        }
+
+        .fragment-card.used {
+            opacity: 0.2;
+            pointer-events: none;
+            border-color: #333;
+        }
+
+        .fragment-text {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .fragment-meta {
+            font-size: 10px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .reconstruction-area {
+            background: #000;
+            border: 2px dashed #00ff41;
+            padding: 30px;
+            margin: 25px 0;
+            min-height: 200px;
+            line-height: 2.5;
+            position: relative;
+        }
+
+        .reconstruction-area::before {
+            content: 'MESSAGE RECONSTRUCTION AREA';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #0a0a0a;
+            padding: 0 10px;
+            font-size: 11px;
+            color: #00ff88;
+        }
+
+        .slot {
+            display: inline-block;
+            min-width: 120px;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 2px solid #00ff41;
+            background: #1a1a1a;
+            color: #00ff88;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .slot.empty {
+            border-style: dashed;
+            color: #666;
+            animation: pulse 2s infinite;
+        }
+
+        .slot.filled {
+            background: rgba(0, 255, 65, 0.2);
+            animation: none;
+        }
+
+        .slot:hover {
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .btn {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .metadata-box {
+            background: #0d0d0d;
+            border-left: 4px solid #ff4444;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .timeline-stamp {
+            color: #ffaa00;
+            font-size: 11px;
+            margin: 5px 0;
+        }
+
+        .hint-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .sector-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .sector-tag {
+            background: #1a1a1a;
+            padding: 8px;
+            border-left: 2px solid #00ff41;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div style="color: #00ff88; margin-bottom: 10px;">✓ PASSWORD CRACKED: "password"</div>
+            <h1 style="color: #00ff41;">FORENSIC MESSAGE RECONSTRUCTION</h1>
+            <p style="margin-top: 10px; color: #888;">Deep-scanning SQLite database fragments from backup sectors...</p>
+        </div>
+
+        <div class="progress-indicator">
+            <div class="progress-step complete">
+                <div style="font-size: 24px;">✓</div>
+                <div style="font-size: 11px; margin-top: 5px;">MIRROR SOLVED</div>
+            </div>
+            <div class="progress-step complete">
+                <div style="font-size: 24px;">✓</div>
+                <div style="font-size: 11px; margin-top: 5px;">PASSWORD CRACKED</div>
+            </div>
+            <div class="progress-step active">
+                <div style="font-size: 24px;">⚡</div>
+                <div style="font-size: 11px; margin-top: 5px;">MESSAGE RECOVERY</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">📊</div>
+                <div style="font-size: 11px; margin-top: 5px;">PATTERN MATCHING</div>
+            </div>
+            <div class="progress-step">
+                <div style="font-size: 24px;">🎯</div>
+                <div style="font-size: 11px; margin-top: 5px;">SUSPECT ID</div>
+            </div>
+        </div>
+
+        <div class="chat-recovery-box">
+            <h2 style="color: #00ff88; margin-bottom: 20px;">📱 WHATSAPP CONVERSATION: Dr. Goyal ↔ Rhea Kapoor</h2>
+            
+            <div class="metadata-box">
+                <strong style="color: #ff4444;">CRITICAL METADATA:</strong><br>
+                <div class="timeline-stamp">→ Conversation period: 00:51 AM - 01:02 AM</div>
+                <div class="timeline-stamp">→ Deletion event: 01:33 AM (31 minutes after final message)</div>
+                <div class="timeline-stamp">→ Deletion method: WhatsApp API batch command (automated)</div>
+                <div class="timeline-stamp">→ Source device: Android (Samsung) registered to Rhea Kapoor</div>
+                <div class="timeline-stamp">→ Recovery method: msgstore.db.crypt14 backup file analysis</div>
+            </div>
+
+            <div class="message-fragment">
+                <strong style="color: #4a9eff;">Dr. Goyal [00:51]:</strong><br>
+                I know what you did. The citations. The ghost collaborators. I have screenshots.
+            </div>
+
+            <div class="message-fragment">
+                <strong style="color: #ff69b4;">Rhea Kapoor [00:53]:</strong><br>
+                You're overreacting. Everyone does this.
+            </div>
+
+            <div class="message-fragment">
+                <strong style="color: #4a9eff;">Dr. Goyal [00:54]:</strong><br>
+                Not everyone uses MY credentials to cover their tracks.
+            </div>
+
+            <div class="message-fragment">
+                <strong style="color: #ff69b4;">Rhea Kapoor [00:56]:</strong><br>
+                If you release those files, I'm done. You know that.
+            </div>
+
+            <div class="message-fragment" style="border-left-color: #ff4444; background: rgba(255, 68, 68, 0.05);">
+                <strong style="color: #4a9eff;">Dr. Goyal [00:58]:</strong><br>
+                Then you should've thought about that before you <span class="corrupted-text">[CORRUPTED]</span> my access "temporarily."
+            </div>
+
+            <div class="message-fragment" style="border-left-color: #ff4444; background: rgba(255, 68, 68, 0.05);">
+                <strong style="color: #ff69b4;">Rhea Kapoor [01:02]:</strong><br>
+                <span class="corrupted-text">[DELETED - FRAGMENTS SCATTERED ACROSS 7 DATABASE SECTORS]</span>
+            </div>
+        </div>
+
+        <div style="background: #1a1a1a; padding: 25px; margin: 30px 0; border: 2px solid #ffaa00;">
+            <h3 style="color: #ffaa00; margin-bottom: 15px;">🔧 TASK 2: RECONSTRUCT THE DELETED MESSAGE</h3>
+            <p style="color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+                Rhea's final message (01:02 AM) was deleted using automated API commands, but fragments remain scattered across 
+                multiple database sectors. The SQLite journal file shows 15 word/phrase fragments were recovered, but they're 
+                out of order and mixed with decoy data from other conversations.
+            </p>
+
+            <div style="background: #000; padding: 15px; margin: 15px 0; border-left: 3px solid #ff4444;">
+                <strong style="color: #ff4444;">FORENSIC CHALLENGE:</strong><br>
+                <span style="color: #888; font-size: 12px; line-height: 1.8;">
+                    • Fragments include words from OTHER conversations (red herrings)<br>
+                    • Timestamp metadata can help identify correct sequence<br>
+                    • Message structure follows WhatsApp's 160-character limit<br>
+                    • Rhea's communication pattern: Direct, terse, threatening when cornered<br>
+                    • Context: She just threatened "I'm done" if he exposes her
+                </span>
+            </div>
+        </div>
+
+        <div class="hint-box">
+            <strong style="color: #ffaa00; font-size: 14px;">📊 RECOVERED DATABASE SECTORS:</strong>
+            <div class="sector-info">
+                <div class="sector-tag">
+                    <strong>Sector 0x4A2:</strong> "person", "talk" (timestamp: 01:02:17)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x4A3:</strong> "Fine.", "I'll" (timestamp: 01:02:14)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x4A5:</strong> "stupid.", "do" (timestamp: 01:02:23)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x4A7:</strong> "anything" (timestamp: 01:02:21)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x3F1:</strong> "please", "sorry" (timestamp: 00:47:33) ⚠️ OLD MESSAGE
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x4A4:</strong> "in", "meet" (timestamp: 01:02:18)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x4A6:</strong> "Don't", "you" (timestamp: 01:02:19)
+                </div>
+                <div class="sector-tag">
+                    <strong>Sector 0x5B2:</strong> "love", "tomorrow" (timestamp: 00:23:15) ⚠️ OLD MESSAGE
+                </div>
+            </div>
+        </div>
+
+        <div class="fragment-bank" id="fragmentBank">
+            <div class="fragment-card" data-word="Fine." data-sector="0x4A3">
+                <div class="fragment-text">"Fine."</div>
+                <div class="fragment-meta">Sector: 0x4A3<br>Time: 01:02:14</div>
+            </div>
+            
+            <div class="fragment-card" data-word="meet" data-sector="0x4A4">
+                <div class="fragment-text">"meet"</div>
+                <div class="fragment-meta">Sector: 0x4A4<br>Time: 01:02:18</div>
+            </div>
+            
+            <div class="fragment-card" data-word="in" data-sector="0x4A4">
+                <div class="fragment-text">"in"</div>
+                <div class="fragment-meta">Sector: 0x4A4<br>Time: 01:02:18</div>
+            </div>
+            <div class="fragment-card" data-word="I'll" data-sector="0x4A3">
+                <div class="fragment-text">"I'll"</div>
+                <div class="fragment-meta">Sector: 0x4A3<br>Time: 01:02:14</div>
+            </div>
+            <div class="fragment-card" data-word="person" data-sector="0x4A2">
+                <div class="fragment-text">"person"</div>
+                <div class="fragment-meta">Sector: 0x4A2<br>Time: 01:02:17</div>
+            </div>
+            <div class="fragment-card" data-word="tonight." data-sector="0x4A2">
+                <div class="fragment-text">"tonight."</div>
+                <div class="fragment-meta">Sector: 0x4A2<br>Time: 01:02:17</div>
+            </div>
+            <div class="fragment-card" data-word="you" data-sector="0x4A6">
+                <div class="fragment-text">"you"</div>
+                <div class="fragment-meta">Sector: 0x4A6<br>Time: 01:02:19</div>
+            </div>
+            <div class="fragment-card" data-word="Don't" data-sector="0x4A6">
+                <div class="fragment-text">"Don't"</div>
+                <div class="fragment-meta">Sector: 0x4A6<br>Time: 01:02:19</div>
+            </div>
+            
+            <div class="fragment-card" data-word="anything" data-sector="0x4A7">
+                <div class="fragment-text">"anything"</div>
+                <div class="fragment-meta">Sector: 0x4A7<br>Time: 01:02:21</div>
+            </div>
+            
+            <div class="fragment-card" data-word="before" data-sector="0x4A5">
+                <div class="fragment-text">"before"</div>
+                <div class="fragment-meta">Sector: 0x4A5<br>Time: 01:02:23</div>
+            </div>
+            <div class="fragment-card" data-word="I" data-sector="0x4A5">
+                <div class="fragment-text">"I"</div>
+                <div class="fragment-meta">Sector: 0x4A5<br>Time: 01:02:24</div>
+            </div>
+            
+            <!-- DECOY WORDS -->
+            <div class="fragment-card" data-word="please" data-sector="0x3F1">
+                <div class="fragment-text">"please"</div>
+                <div class="fragment-meta">Sector: 0x3F1<br>Time: 00:47:33</div>
+            </div>
+            <div class="fragment-card" data-word="stupid" data-sector="0x4A5">
+                <div class="fragment-text">"stupid"</div>
+                <div class="fragment-meta">Sector: 0x4A5<br>Time: 01:02:23</div>
+            </div>
+            <div class="fragment-card" data-word="sorry" data-sector="0x3F1">
+                <div class="fragment-text">"sorry"</div>
+                <div class="fragment-meta">Sector: 0x3F1<br>Time: 00:47:33</div>
+            </div>
+            <div class="fragment-card" data-word="do" data-sector="0x4A5">
+                <div class="fragment-text">"do"</div>
+                <div class="fragment-meta">Sector: 0x4A5<br>Time: 01:02:23</div>
+            </div>
+            <div class="fragment-card" data-word="love" data-sector="0x5B2">
+                <div class="fragment-text">"love"</div>
+                <div class="fragment-meta">Sector: 0x5B2<br>Time: 00:23:15</div>
+            </div>
+            <div class="fragment-card" data-word="arrive." data-sector="0x4A5">
+                <div class="fragment-text">"arrive."</div>
+                <div class="fragment-meta">Sector: 0x4A5<br>Time: 01:02:24</div>
+            </div>
+            <div class="fragment-card" data-word="tomorrow" data-sector="0x5B2">
+                <div class="fragment-text">"tomorrow"</div>
+                <div class="fragment-meta">Sector: 0x5B2<br>Time: 00:23:15</div>
+            </div>
+        </div>
+
+        <div class="reconstruction-area">
+            <strong style="color: #ff69b4;">Rhea Kapoor [01:02 AM]:</strong><br><br>
+            <div id="slotsContainer">
+                <span class="slot empty" data-position="0">[SLOT 1]</span>
+                <span class="slot empty" data-position="1">[SLOT 2]</span>
+                <span class="slot empty" data-position="2">[SLOT 3]</span>
+                <span class="slot empty" data-position="3">[SLOT 4]</span>
+                <span class="slot empty" data-position="4">[SLOT 5]</span>
+                <span class="slot empty" data-position="5">[SLOT 6]</span>
+                <span class="slot empty" data-position="6">[SLOT 7]</span>
+                <span class="slot empty" data-position="7">[SLOT 8]</span>
+                <span class="slot empty" data-position="8">[SLOT 9]</span>
+                <span class="slot empty" data-position="9">[SLOT 10]</span>
+                <span class="slot empty" data-position="10">[SLOT 11]</span>
+                <span class="slot empty" data-position="11">[SLOT 12]</span>
+                <span class="slot empty" data-position="12">[SLOT 13]</span>
+                <span class="slot empty" data-position="13">[SLOT 14]</span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn" id="verifyBtn" onclick="verifyReconstruction()" disabled>VERIFY RECONSTRUCTION</button>
+            <button class="btn" style="background: #ff4444;" onclick="resetReconstruction()">RESET ALL</button>
+        </div>
+
+        <div id="verificationResult" style="margin-top: 20px; display: none;"></div>
+
+        <div style="background: #0d0d0d; padding: 20px; border: 1px solid #333; margin-top: 30px;">
+            <h3 style="color: #00ff41; margin-bottom: 10px;">ANALYSIS NOTES:</h3>
+            <p style="color: #888; font-size: 13px; line-height: 1.8;">
+                → API deletion indicates technical knowledge (not panic-driven manual delete)<br>
+                → Timestamp shows cleanup occurred 31 minutes after death<br>
+                → Only Rhea's outgoing messages were deleted (selective targeting)<br>
+                → Dr. Goyal's messages remain intact (evidence of one-sided cleanup)<br>
+                → Database fragmentation pattern suggests automated script execution
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let selectedWords = [];
+        const slots = [];
+        const correctSequence = ["Fine.", "I'll", "meet", "you", "in", "person", "tonight.", "Don't", "do", "anything", "stupid", "before", "I", "arrive."];
+        
+        // Initialize slots
+        document.querySelectorAll('.slot').forEach((slot, index) => {
+            slots[index] = null;
+            slot.addEventListener('click', function() {
+                if (slots[index] !== null) {
+                    // Remove word from slot
+                    const word = slots[index];
+                    slots[index] = null;
+                    selectedWords = selectedWords.filter(w => w !== word);
+                    this.textContent = `[SLOT ${index + 1}]`;
+                    this.classList.remove('filled');
+                    this.classList.add('empty');
+                    
+                    // Re-enable the fragment card
+                    document.querySelectorAll('.fragment-card').forEach(card => {
+                        if (card.dataset.word === word) {
+                            card.classList.remove('used');
+                        }
+                    });
+                    updateVerifyButton();
+                }
+            });
+        });
+
+        // Handle fragment selection
+        document.querySelectorAll('.fragment-card').forEach(card => {
+            card.addEventListener('click', function() {
+                if (!this.classList.contains('used')) {
+                    const word = this.dataset.word;
+                    
+                    // Find first empty slot
+                    const emptySlotIndex = slots.findIndex(s => s === null);
+                    if (emptySlotIndex !== -1) {
+                        slots[emptySlotIndex] = word;
+                        selectedWords.push(word);
+                        
+                        const slotElement = document.querySelector(`.slot[data-position="${emptySlotIndex}"]`);
+                        slotElement.textContent = word;
+                        slotElement.classList.remove('empty');
+                        slotElement.classList.add('filled');
+                        
+                        this.classList.add('used');
+                        updateVerifyButton();
+                    }
+                }
+            });
+        });
+
+        function updateVerifyButton() {
+            const filledSlots = slots.filter(s => s !== null).length;
+            document.getElementById('verifyBtn').disabled = filledSlots !== correctSequence.length;
+        }
+
+        function resetReconstruction() {
+            slots.fill(null);
+            selectedWords = [];
+            document.querySelectorAll('.slot').forEach((slot, index) => {
+                slot.textContent = `[SLOT ${index + 1}]`;
+                slot.classList.remove('filled');
+                slot.classList.add('empty');
+            });
+            document.querySelectorAll('.fragment-card').forEach(card => card.classList.remove('used'));
+            document.getElementById('verifyBtn').disabled = true;
+            document.getElementById('verificationResult').style.display = 'none';
+        }
+
+        function verifyReconstruction() {
+            const isCorrect = JSON.stringify(slots.filter(s => s !== null)) === JSON.stringify(correctSequence);
+            const resultDiv = document.getElementById('verificationResult');
+            
+            if (isCorrect) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 255, 65, 0.1); border: 2px solid #00ff41; padding: 25px; border-radius: 8px;">
+                        <div style="color: #00ff88; font-size: 20px; margin-bottom: 15px;">✓ MESSAGE RECONSTRUCTION VERIFIED</div>
+                        <p style="color: #ccc; line-height: 2;">
+                            <strong>Reconstructed Message:</strong><br>
+                            <span style="color: #ff4444; font-size: 16px;">"${correctSequence.join(' ')}"</span><br><br>
+                            
+                            <strong style="color: #ffaa00;">FORENSIC INTERPRETATION:</strong><br>
+                            • Message sent at 01:02 AM (4 minutes before Dr. Goyal's death)<br>
+                            • Indicates premeditated in-person confrontation<br>
+                            • Threatening tone: "Don't do anything stupid before I arrive"<br>
+                            • Timeline suggests Rhea planned to visit that night<br>
+                            • Deletion 31 minutes after death indicates consciousness of guilt<br><br>
+                            
+                            <span style="color: #ff4444;">Cross-referencing with physical access logs...</span>
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.location.href = 'stage3.html';
+                }, 5000);
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(255, 68, 68, 0.1); border: 2px solid #ff4444; padding: 20px; border-radius: 8px;">
+                        <div style="color: #ff4444; font-size: 18px; margin-bottom: 10px;">✗ RECONSTRUCTION FAILED</div>
+                        <p style="color: #ccc; line-height: 1.8;">
+                            The sequence doesn't match the timestamp metadata or communication pattern.<br><br>
+                            <strong>HINTS:</strong><br>
+                            • Focus on fragments with timestamps around 01:02 AM<br>
+                            • Ignore sectors 0x3F1 and 0x5B2 (old messages)<br>
+                            • Message should escalate from "Fine" to a direct threat<br>
+                            • pattern: Brief, direct, controlling language
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
